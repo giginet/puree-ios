@@ -1,4 +1,5 @@
 #import <YapDatabase/YapDatabase.h>
+#import "PURDeserializer.h"
 #import "PURLogStore.h"
 #import "PURLog.h"
 #import "PUROutput.h"
@@ -47,11 +48,18 @@ static NSString *PURLogKey(PUROutput *output, PURLog *log)
 
 - (instancetype)initWithDatabasePath:(NSString *)databasePath
 {
+    return [self initWithDatabasePath:databasePath deserializer:[PURDeserializer defaultDeserializer]];
+}
+
+- (instancetype)initWithDatabasePath:(NSString *)databasePath deserializer:(PURDeserializer *)deserializer
+{
     self = [super init];
     if (self) {
         _databasePath = databasePath;
+        _deserializer = deserializer;
     }
     return self;
+
 }
 
 - (BOOL)prepare
@@ -74,7 +82,12 @@ static NSString *PURLogKey(PUROutput *output, PURLog *log)
 
     YapDatabase *database = __databases[self.databasePath];
     if (!database) {
-        database = [[YapDatabase alloc] initWithPath:self.databasePath];
+        database = [[YapDatabase alloc] initWithPath:self.databasePath
+                                    objectSerializer:nil
+                                  objectDeserializer:self.deserializer.objectDeserializer
+                                  metadataSerializer:nil
+                                metadataDeserializer:self.deserializer.metadataDeserializer
+                                             options:nil];
         __databases[self.databasePath] = database;
     }
     if (self.databaseConnection.database != database) {
@@ -102,7 +115,9 @@ static NSString *PURLogKey(PUROutput *output, PURLog *log)
         NSString *keyPrefix = [NSStringFromClass([output class]) stringByAppendingString:@"_"];
         [transaction enumerateRowsInCollection:PURLogStoreCollectionNameForPattern(output.tagPattern)
                                     usingBlock:^(NSString *key, PURLog *log, id metadata, BOOL *stop){
-                                        [logs addObject:log];
+                                        if (log != nil) {
+                                            [logs addObject:log];
+                                        }
                                     }
                                     withFilter:^BOOL(NSString *key){
                                         return [key hasPrefix:keyPrefix];

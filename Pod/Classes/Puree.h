@@ -3,6 +3,7 @@
 #import "PURTagCheckingResult.h"
 #import "PURLogStore.h"
 #import "PURLog.h"
+#import "PURDeserializer.h"
 
 #import "PURFilter.h"
 #import "PURFilterSetting.h"

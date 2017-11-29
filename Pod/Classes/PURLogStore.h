@@ -2,6 +2,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class PURDeserializer;
 @class PURLog;
 @class PUROutput;
 
@@ -9,8 +10,12 @@ typedef void(^PURLogStoreRetrieveCompletionBlock)(NSArray<PURLog *> *logs);
 
 @interface PURLogStore : NSObject
 
+@property (nonatomic, copy) PURDeserializer *deserializer;
+
 + (instancetype)defaultLogStore;
 - (instancetype)initWithDatabasePath:(NSString *)databasePath;
+- (instancetype)initWithDatabasePath:(NSString *)databasePath
+                        deserializer:(PURDeserializer *)deserializer;
 
 - (BOOL)prepare;
 
